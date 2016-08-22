@@ -58,15 +58,120 @@ service = cls(app_name)
 
 这里RpcWorker类的实例的功能类似于这个功能。
 
-### **Service类函数**
+### **Service类**
 
 在openstack中，各个服务的组件都以Service类的方式来进行交互，在neutron中，Service类在多个地方出现，包括`neutron.service.Service`类，`neutron.common.rpc.Service`类和`oslo_service.Service`类。通常来说，`oslo_service.Service`类是所有service的父类，而`neutron.common.rpc.Service`类继承于`oslo_service.Service`类，`neutron.service.Service`类继承于`neutron.common.rpc.Service`类。
 
 Server类主要包括以下几个方法函数：
 
-#### `start`
+```
+    def __init__(self, host, binary, topic, manager, report_interval=None,
+                 periodic_interval=None, periodic_fuzzy_delay=None,
+                 *args, **kwargs):
+
+        self.binary = binary
+        self.manager_class_name = manager
+        manager_class = importutils.import_class(self.manager_class_name)
+        self.manager = manager_class(host=host, *args, **kwargs)
+        self.report_interval = report_interval
+        self.periodic_interval = periodic_interval
+        self.periodic_fuzzy_delay = periodic_fuzzy_delay
+        self.saved_args, self.saved_kwargs = args, kwargs
+        self.timers = []
+        super(Service, self).__init__(host, topic, manager=self.manager)
+```
 
 
+
+
+#### `start()`
+
+```
+    def start(self):
+        """调用Neutron.manager的init_host()方法，对一个单独的服务进行初始化 """
+        self.manager.init_host()
+        super(Service, self).start()
+        """主要将server端的状态周期性的进行报告，调用loopingcall的方法进行汇报 """
+        if self.report_interval:
+            pulse = loopingcall.FixedIntervalLoopingCall(self.report_state)
+            pulse.start(interval=self.report_interval,
+                        initial_delay=self.report_interval)
+            self.timers.append(pulse)
+        """读取配置文件的periodic_interval和periodic_fuzzy_delay参数 """
+        if self.periodic_interval:
+            if self.periodic_fuzzy_delay:
+		"""生成一个随机的initial_delay"""
+                initial_delay = random.randint(0, self.periodic_fuzzy_delay)
+            else:
+                initial_delay = None
+		"""调用loopingcall类方法生产固定间隔的looping call消息发送方式"""
+            periodic = loopingcall.FixedIntervalLoopingCall(
+                self.periodic_tasks)
+            periodic.start(interval=self.periodic_interval,
+                           initial_delay=initial_delay)
+            self.timers.append(periodic)
+        self.manager.after_start()
+
+```
+
+
+
+#### `creat()`
+
+```
+    def create(cls, host=None, binary=None, topic=None, manager=None,
+               report_interval=None, periodic_interval=None,
+               periodic_fuzzy_delay=None):
+        """Instantiates class and passes back application object.
+		这些参数都是从配置文件中读取的
+        :param host: defaults to CONF.host
+        :param binary: defaults to basename of executable
+        :param topic: defaults to bin_name - 'neutron-' part
+        :param manager: defaults to CONF.<topic>_manager
+        :param report_interval: defaults to CONF.report_interval
+        :param periodic_interval: defaults to CONF.periodic_interval
+        :param periodic_fuzzy_delay: defaults to CONF.periodic_fuzzy_delay
+
+        """
+        if not host:
+            host = CONF.host
+        if not binary:
+            binary = os.path.basename(inspect.stack()[-1][1])
+        if not topic:
+            topic = binary.rpartition('neutron-')[2]
+            topic = topic.replace("-", "_")
+        if not manager:
+            manager = CONF.get('%s_manager' % topic, None)
+        if report_interval is None:
+            report_interval = CONF.report_interval
+        if periodic_interval is None:
+            periodic_interval = CONF.periodic_interval
+        if periodic_fuzzy_delay is None:
+            periodic_fuzzy_delay = CONF.periodic_fuzzy_delay
+		"""如果配置文件中都有上述参数，那么初始化自身类cls """
+        service_obj = cls(host, binary, topic, manager,
+                          report_interval=report_interval,
+                          periodic_interval=periodic_interval,
+                          periodic_fuzzy_delay=periodic_fuzzy_delay)
+
+        return service_obj
+
+```
+
+
+#### `kill()`
+
+#### `stop()`
+
+#### `wait()`
+
+#### `reset()`
+
+#### `periodic_tasks()`
+
+#### `report_state()`
+
+z总之，一方面运行一个基于topic的manager来监听消息队列，另外一方面，可以在manager上跑周期性的任务，并汇报状态。
 
 
 ### start_plugin_workers方法
