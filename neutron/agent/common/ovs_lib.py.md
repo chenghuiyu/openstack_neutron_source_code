@@ -7,8 +7,10 @@
 操作OVS命令的基类，这个类包含了多个方法进行网桥的操作，这个方法的实现主要实现了`neutron.agent.ovsdb.api`类的抽象方法来对网桥进行操作。
 
 
-``` # 添加网桥，constants是在`neutron.plugins.ml2.drivers.openvswitch.agent.common.constants类`中实现的
-    def add_bridge(self, bridge_name,
+```
+
+    # 添加网桥，constants是在`neutron.plugins.ml2.drivers.openvswitch.agent.common.constants类`中实现的
+	def add_bridge(self, bridge_name,
                    datapath_type=constants.OVS_DATAPATH_SYSTEM):
 
         self.ovsdb.add_br(bridge_name,
@@ -20,7 +22,8 @@
 	# 删除网桥
     def delete_bridge(self, bridge_name):
         self.ovsdb.del_br(bridge_name).execute()
-	# 网桥是否存在
+
+    # 网桥是否存在
     def bridge_exists(self, bridge_name):
         return self.ovsdb.br_exists(bridge_name).execute()
 	# 端口是否存在
@@ -49,10 +52,12 @@
                    log_errors=True):
         return self.ovsdb.db_get(table, record, column).execute(
             check_error=check_error, log_errors=log_errors)
+
 ```
 
 
 ### **OVSBridge类**
+
 
 是继承自BaseOVS的子类，进一步丰富了父类的方法，包括端口port，tunnel的操作，也是实现了`neutron.agent.ovsdb.api`类的抽象方法。
 
@@ -68,8 +73,12 @@
                                                  FAILMODE_SECURE))
         # Don't return until vswitchd sets up the internal port'
         self.get_port_ofport(self.br_name)
+
 ```
+
+
 这个地方比较巧妙，在调用create方法的时候，只有vswitchd这个进程在数据库中设置好port信息后，才进行return，创建方法返回的都是从数据库中读到的创建之后的port信息。
+
 
 ```
 	# 增加ofport
@@ -80,18 +89,23 @@
                 txn.add(self.ovsdb.db_set('Interface', port_name,
                                           *interface_attr_tuples))
         return self.get_port_ofport(port_name)
+
 ```
+
 
 为了说明add_port的具体的操作，需要从两个步骤分别进行说明：
 
+
 - 第一步：调用OVS的add port这个动作，具体可以从`transaction()`这个方法说起。
+
 
 - 第二部：查询数据库，将刚创建的port参数信息返回，具体可以从`db_set()`这个方法说起。
 
 
-#### **transaction()**方法
+#### **transaction()**
 
 neutron.agent.ovsdb.api`中，`transaction()`实际上是一个抽象的方法，具体是通过`OvsdbVsctl`类来进行实现的
+
 
 ```
 	# 可以理解为操作命令的转换
@@ -104,19 +118,23 @@ neutron.agent.ovsdb.api`中，`transaction()`实际上是一个抽象的方法�
         :param log_errors:  Log an error if the transaction fails?
         :type log_errors:   bool
         :returns: A new transaction
-        :rtype: :class:`Transaction`
+        :rtype: :class:Transaction
         """
+
 ```
 
 ```
+
 # 继承后将实现该抽象方法
 class OvsdbVsctl(ovsdb.API):
     def transaction(self, check_error=False, log_errors=True, **kwargs):
         return Transaction(self.context, check_error, log_errors, **kwargs)
+
 ```
 
 
 ```
+
 # 下面来看具体实现，基类为ovsdb.Transaction
 class Transaction(ovsdb.Transaction):
     def __init__(self, context, check_error=False, log_errors=True, opts=None):
@@ -161,13 +179,15 @@ class Transaction(ovsdb.Transaction):
                                   {'cmd': full_args})
                 if not self.check_error:
                     ctxt.reraise = False
+
 ```
 
 那么这就将neutron的API命令转换为OVS命令调用OVS进行网络的配置。
 
 
 
-#### **db_set()**方法
+#### **db_set()** 
+
 主要从数据库中读取新创建的port信息。
 
 从`get_port_ofport()`入手分析，
@@ -184,6 +204,7 @@ class Transaction(ovsdb.Transaction):
                               "Exception: %(exception)s"),
                           {'pname': port_name, 'exception': e})
         return ofport
+
 ```
 
 那么_get_port_ofport又进行了什么动作呢：
@@ -194,21 +215,27 @@ class Transaction(ovsdb.Transaction):
     def _get_port_ofport(self, port_name):
 	# 方法返回了数据库API的一个方法db_get_val
         return self.db_get_val("Interface", port_name, "ofport")
-```
-那么db_get_val是如何运行的呢：
 
 ```
+
+那么db_get_val是如何运行的呢：
+
+
+```
+
     def db_get_val(self, table, record, column, check_error=False,
                    log_errors=True):
 	# 直接返回了数据库的db_get方法结果，接着来看db_get的具体操作
         return self.ovsdb.db_get(table, record, column).execute(
             check_error=check_error, log_errors=log_errors)
+
 ```
 
 可以看到实际上是调用了ovsdb的`db_get`方法
 在`neutron.agent.ovsdb.api`中，`db_get`实际上是一个抽象的方法，具体是通过`OvsdbVsctl`类来进行实现的
 
 ```
+
 # 子类来实现ovsdb.API
 class OvsdbVsctl(ovsdb.API):
 	# 返回dict数组的port信息
@@ -220,8 +247,11 @@ class OvsdbVsctl(ovsdb.API):
         # the result of a db_get() call unsafe.
         return DbGetCommand(self.context, 'list', args=[table, record],
                             columns=[column])
+
 ```
+
 ```
+
 class DbGetCommand(DbCommand):
     @DbCommand.result.setter
     def result(self, val):
@@ -237,6 +267,8 @@ class DbGetCommand(DbCommand):
 
 
 > python学习小结：super()的好处就是可以避免直接使用父类的名字.但是它主要用于多重继承，在Python3.0中可以super(OVSBridge, self).__init__()替换为super().__init__()
+ 
+
 ```
 # 相同功能的两种实现方式
 class Base(object):
@@ -252,5 +284,7 @@ class ChildB(Base):
         super(ChildB, self).__init__()
 
 print ChildA(),ChildB()
+
 ```
+
 super[更加详细的介绍](http://www.artima.com/weblogs/viewpost.jsp?thread=236275)
