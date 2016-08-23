@@ -161,17 +161,53 @@ Server类主要包括以下几个方法函数：
 
 #### `kill()`
 
+```
+    def kill(self):
+        """Destroy the service object."""
+        self.stop()
+```
 #### `stop()`
+
+停止service的方法
 
 #### `wait()`
 
+```
+        for x in self.timers:
+            try:
+                x.wait()
+```
+
 #### `reset()`
+
+```
+    def reset(self):
+        config.reset_service()
+```
 
 #### `periodic_tasks()`
 
+```
+    def periodic_tasks(self, raise_on_error=False):
+        """Tasks to be run at a periodic interval."""
+        ctxt = context.get_admin_context()
+        self.manager.periodic_tasks(ctxt, raise_on_error=raise_on_error)
+```
+
 #### `report_state()`
 
-z总之，一方面运行一个基于topic的manager来监听消息队列，另外一方面，可以在manager上跑周期性的任务，并汇报状态。
+这里的'report_state()'并没有实现，后面如果有子类继承的话，就会有相关方法进行覆盖。
+
+```
+    def report_state(self):
+        """Update the state of this service."""
+        # Todo(gongysh) report state to neutron server
+        pass
+```
+
+
+
+总之，一方面运行一个基于topic的manager来监听消息队列，另外一方面，可以在manager上跑周期性的任务，并汇报状态。
 
 
 ### start_plugin_workers方法
