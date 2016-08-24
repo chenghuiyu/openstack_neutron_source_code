@@ -332,14 +332,3 @@ target = oslo_messaging.Target(version='1.0')
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
