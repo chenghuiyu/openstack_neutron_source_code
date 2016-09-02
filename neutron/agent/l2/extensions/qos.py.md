@@ -3,7 +3,8 @@
 
 ### **QosAgentDriver类**
 
-主要定义了QoS agent driver的抽象接口，并定义了`create`、`update`、`delete`方法，这个方法需要一定的参数，包括具体的action、port和qos_policy。
+主要定义了QoS agent driver的抽象接口，并定义了`create`、`update`、`delete`方法，这个方法需要一定的参数，包括具体的action、port和qos_policy。对于QosAgent来说
+主要通过实现QoS agent driver的抽象接口来调用QoS agent driver实现相应的QOS policy。
 
 
 ```
@@ -48,7 +49,7 @@
 
 ```
 
-下面具体来看`_handle_update_create_rules()`方法，这是一个内部类的方法，
+下面具体来看`_handle_update_create_rules()`方法，这是一个内部类的方法，主要就是更新一下创建的policy规则。
 
 ```
     def _handle_update_create_rules(self, action, port, qos_policy):
@@ -56,6 +57,7 @@
             if rule.should_apply_to_port(port):
 		# handler的rule类型和qos driver定义保持一致，包括create_、update_、delete_
                 handler_name = "".join((action, "_", rule.rule_type))
+		# Get a named attribute from an object; getattr(x, 'y') is equivalent to x.y.
                 handler = getattr(self, handler_name)
                 handler(port, rule)
             else:
