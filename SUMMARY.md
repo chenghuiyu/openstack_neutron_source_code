@@ -62,6 +62,16 @@
 * [七、releasenotes](releasenotes/README.md) 
 * [八、tools](tools/README.md) 
 * [九、QOS专题](chyu-subjects/qos/README.md) 
+	* [9.1 QOS介绍](chyu-subjects/qos/1-qos-introduction.md)
+	* [9.2 neutron中的QOS实现源码解读]
+		* [9.2.1 agent中的qos](2-qos-neutron-agent.md)
+		* [9.2.2 api中的qos](3-qos-neutron-api.md)
+		* [9.2.3 common中的qos](4-qos-neutron-common.md)
+		* [9.2.4 core_extension中的qos](5-qos-neutron-core_extension.md)
+		* [9.2.5 db中的qos](6-qos-neutron-db.md)
+		* [9.2.6 objects中的qos](7-qos-neutron-objects.md)
+		* [9.2.7 ml2中的qos](8-qos-neutron-plugins-ml2.md)
+		* [9.2.8 services中的qos](9-qos-neutron-services.md)
 * [十、OVS专题](chyu-subjects/ovs/README.md)
 * [十一、RPC专题](chyu-subjects/rpc/README.md)
 
