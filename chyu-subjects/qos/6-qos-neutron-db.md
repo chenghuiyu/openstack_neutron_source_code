@@ -7,15 +7,11 @@
 
 主要对network和port进行操作。
 
-`create_policy_network_binding`对RESTful API的create进行响应，在数据库中创建和network绑定的policy策略
-`delete_policy_network_binding`对RESTful API的delete进行响应，在数据库中删除和network绑定的policy策略
-`create_policy_port_binding`对RESTful API的create进行响应，在数据库中创建和port绑定的policy策略
-`delete_policy_port_binding`对RESTful API的delete进行响应，在数据库中删除和port绑定的policy策略
 
 
 `oslo.db`中的`context.session`来对`sqlalchemy`进行操作，`models.QosNetworkPolicyBinding`返回数据库的操作对象（根据传入的policy_id和network_id来进行操作）
 
-
+`create_policy_network_binding`对RESTful API的delete进行响应，在数据库中创建和network绑定的policy策略 
 
 ```
 def create_policy_network_binding(context, policy_id, network_id):
@@ -30,7 +26,7 @@ def create_policy_network_binding(context, policy_id, network_id):
 
 ```
 
-
+`delete_policy_network_binding`对RESTful API的delete进行响应，在数据库中删除和network绑定的policy策略
 
 ```
 def delete_policy_network_binding(context, policy_id, network_id):
@@ -47,6 +43,7 @@ def delete_policy_network_binding(context, policy_id, network_id):
 
 ```
 
+`create_policy_port_binding`对RESTful API的create进行响应，在数据库中创建和port绑定的policy策略
 
 ```
 def create_policy_port_binding(context, policy_id, port_id):
@@ -62,7 +59,7 @@ def create_policy_port_binding(context, policy_id, port_id):
 ```
 
 
-
+`delete_policy_port_binding`对RESTful API的delete进行响应，在数据库中删除和port绑定的policy策略
 
 ```
 def delete_policy_port_binding(context, policy_id, port_id):
