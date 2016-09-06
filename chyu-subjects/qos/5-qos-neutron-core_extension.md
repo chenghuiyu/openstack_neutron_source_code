@@ -153,6 +153,11 @@ qos_policy_id，然后获得policy对象，将更新policy的port信息加到数
     def extract_fields(self, resource_type, resource):
         if not self.plugin_loaded:
             return {}
+  
+        binding = resource['qos_policy_binding']
+        qos_policy_id = binding['policy_id'] if binding else None
+        return {qos_consts.QOS_POLICY_ID: qos_policy_id}
+
 
 ```
 
@@ -165,3 +170,22 @@ qos_policy_id，然后获得policy对象，将更新policy的port信息加到数
         with db_api.autonested_transaction(context.session):
             return getattr(self, method_name)(context=context, **kwargs)
 ```
+
+`db_api.autonested_transaction`是`neutron.db.api`中定义的方法，防止被传入的参数嵌套。
+
+```
+@contextlib.contextmanager
+def autonested_transaction(sess):
+    """This is a convenience method to not bother with 'nested' parameter."""
+    try:
+        session_context = sess.begin_nested()
+    except exc.InvalidRequestError:
+        session_context = sess.begin(subtransactions=True)
+    finally:
+        with session_context as tx:
+            yield tx
+
+```
+
+
+
