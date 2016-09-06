@@ -79,16 +79,14 @@ def delete_policy_port_binding(context, policy_id, port_id):
 ```
 
 
+session`是通过sqlalchemy来操作数据库的入口，session的功能主要就是管理程序和数据库之间的会话，对于CRUD的增删改查操作就是通过session对象来进行操作的。上述的四个方法：`create_policy_network_binding`、`delete_policy_network_binding`、`create_policy_port_binding`和`delete_policy_port_binding`就是通过session实现的。
 
 
 
 ## **modles.py**
 
 
-`QosPolicy`继承父类`model_base.BASEV2`、`models_v2.HasId`、`models_v2.HasTenant`，在neutron的对象关系映射处理中，使用SQLAlchemy数据库进行ORM实现，所以在
-`models.py`中，都采用SQLAlchemy进行管理以及操作。在对类中的一个对象进行操作的时候，直接映射为数据库中的一张表，方便了增删改查。
-
-这里总共维护了四张表：`QosPolicy`，`QosNetworkPolicyBinding`，`QosPortPolicyBinding`，`QosBandwidthLimitRule`
+`QosPolicy`继承父类`model_base.BASEV2`、`models_v2.HasId`、`models_v2.HasTenant`，在neutron的对象关系映射处理中，使用SQLAlchemy数据库进行ORM实现，所以在`models.py`中，都采用SQLAlchemy进行管理以及操作。在对类中的一个对象进行操作的时候，直接映射为数据库中的一张表，方便了增删改查。这里总共维护了四张表：`QosPolicy`，`QosNetworkPolicyBinding`，`QosPortPolicyBinding`，`QosBandwidthLimitRule`
 
 ```
 class QosPolicy(model_base.BASEV2, models_v2.HasId, models_v2.HasTenant):
@@ -99,8 +97,7 @@ class QosPolicy(model_base.BASEV2, models_v2.HasId, models_v2.HasTenant):
 
 ```
 
-首先定义一个映射类`QosNetworkPolicyBinding`，后续可以通过操作这个类的实例来实现对数据库表`QosNetworkPolicyBinding`的操作，在映射类中，通过使用`__tablename__`
-属性来指定该映射类所对应的数据库表，通过`Column`类实例的方式来指定数据库的字段。
+首先定义一个映射类`QosNetworkPolicyBinding`，后续可以通过操作这个类的实例来实现对数据库表`QosNetworkPolicyBinding`的操作，在映射类中，通过使用`__tablename__`属性来指定该映射类所对应的数据库表，通过`Column`类实例的方式来指定数据库的字段。
 
 
 
