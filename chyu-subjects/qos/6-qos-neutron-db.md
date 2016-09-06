@@ -76,7 +76,7 @@ def delete_policy_port_binding(context, policy_id, port_id):
 ```
 
 
-session`是通过sqlalchemy来操作数据库的入口，session的功能主要就是管理程序和数据库之间的会话，对于CRUD的增删改查操作就是通过session对象来进行操作的。上述的四个方法：`create_policy_network_binding`、`delete_policy_network_binding`、`create_policy_port_binding`和`delete_policy_port_binding`就是通过session实现的。
+`session`是通过sqlalchemy来操作数据库的入口，session的功能主要就是管理程序和数据库之间的会话，对于CRUD的增删改查操作就是通过session对象来进行操作的。上述的四个方法：`create_policy_network_binding`、`delete_policy_network_binding`、`create_policy_port_binding`和`delete_policy_port_binding`就是通过session实现的。
 
 
 
