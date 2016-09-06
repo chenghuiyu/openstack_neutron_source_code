@@ -72,6 +72,7 @@
 		* [9.2.6 objects中的qos](chyu-subjects/qos/7-qos-neutron-objects.md)
 		* [9.2.7 ml2中的qos](chyu-subjects/qos/8-qos-neutron-plugins-ml2.md)
 		* [9.2.8 services中的qos](chyu-subjects/qos/9-qos-neutron-services.md)
+		* [9.2.9 extensions中的qos](chyu-subjects/qos/10-qos-neutron-extensions.md)
 * [十、OVS专题](chyu-subjects/ovs/README.md)
 * [十一、RPC专题](chyu-subjects/rpc/README.md)
 
