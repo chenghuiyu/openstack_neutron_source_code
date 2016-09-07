@@ -1,4 +1,4 @@
-# neutron中的QOS实现源码-*core_extensions类*中的实现**
+# neutron中的QOS实现源码-core_extensions类中的实现
 
 -------------------------------------------------------
 
