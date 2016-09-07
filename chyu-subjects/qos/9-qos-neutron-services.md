@@ -96,9 +96,37 @@
 
 
 
+主要实现了类`RpcQosServiceNotificationDriver`，主要用来实现qos用于消息队列的driver。继承父类`neutron.services.qos.notification_drivers.QosServiceNotificationDriverBase`。
 
 
+初始化实现了`ResourcesPushRpcApi()`类的实例化
 
+```
+        self.notification_api = resources_rpc.ResourcesPushRpcApi()
+		registry.provide(_get_qos_policy_cb, resources.QOS_POLICY)
+
+```
+
+继承父类的`push()`方法
+
+```
+    def update_policy(self, context, policy):
+        self.notification_api.push(context, policy, events.UPDATED)
+
+```
+
+`push(self, context, resource, event_type)`实现方法，`ResourcesPushRpcApi()`类主要将对象的更新状态信息push给receiver端的agent，通过消息队列的广播topic形式发送。
+
+最终也是以一种cast的形式广播出去，这种并不需要接收端的反馈，push出去就不需要等待接收反馈了。
+
+```
+        cctxt = self._prepare_object_fanout_context(resource)
+        dehydrated_resource = resource.obj_to_primitive()
+        cctxt.cast(context, 'push',
+                   resource=dehydrated_resource,
+                   event_type=event_type)
+
+```
 
 
 
@@ -107,7 +135,13 @@
 
 ### **3、qos_base.py**
 
+主要包括类`QosServiceNotificationDriverBase`，里面全是抽象接口，具体需要继承的子类来实现
 
+
+- `get_description`
+- `create_policy`
+- `update_policy`
+- `delete_policy`
 
 
 
