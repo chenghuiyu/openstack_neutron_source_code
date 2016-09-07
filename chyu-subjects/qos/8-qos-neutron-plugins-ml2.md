@@ -55,4 +55,43 @@ ml2中实现qos主要有三个文件，managers.py、plugin.py和rpc.py三个文
 ## **plugin.py**
 
 
-主要实现了`Ml2Plugin`类，该类继承了多个不同的父类，
+主要实现了`Ml2Plugin`类，该类继承了多个不同的父类，这个类是比较重要的类，主要是对network、subnet和port进行增删改查的操作，但是在qos这一块涉及的并不多。
+
+```
+    def supported_qos_rule_types(self):
+        return self.mechanism_manager.supported_qos_rule_types
+
+```
+
+另外，在方法`update_network()`和`update_port()`中设置qos。
+
+
+```
+def update_network(self, context, id, network):
+
+		   ... ...
+
+           need_network_update_notify = (
+           qos_consts.QOS_POLICY_ID in net_data and
+           original_network[qos_consts.QOS_POLICY_ID] !=
+           updated_network[qos_consts.QOS_POLICY_ID])
+
+		   ... ...
+
+```
+
+```
+def update_port(self, context, id, port):
+		   
+		   ... ...
+
+           if (qos_consts.QOS_POLICY_ID in attrs and
+           original_port[qos_consts.QOS_POLICY_ID] !=
+           updated_port[qos_consts.QOS_POLICY_ID]):
+           need_port_update_notify = True
+		   
+		   ... ...
+
+
+```
+
