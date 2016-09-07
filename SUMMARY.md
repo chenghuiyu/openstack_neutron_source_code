@@ -63,7 +63,7 @@
 * [八、tools](tools/README.md) 
 * [九、QOS专题](chyu-subjects/qos/README.md) 
 	* [9.1 QOS介绍](chyu-subjects/qos/1-qos-introduction.md)
-	* [9.2 neutron中的QOS实现源码解读]
+	* [9.2 neutron中的QOS实现源码解读](chyu-subjects/qos/2-introduction.md)
 		* [9.2.1 agent中的qos](chyu-subjects/qos/2-qos-neutron-agent.md)
 		* [9.2.2 api中的qos](chyu-subjects/qos/3-qos-neutron-api.md)
 		* [9.2.3 common中的qos](chyu-subjects/qos/4-qos-neutron-common.md)
