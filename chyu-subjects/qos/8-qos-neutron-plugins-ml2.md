@@ -95,3 +95,30 @@ def update_port(self, context, id, port):
 
 ```
 
+
+## **rpc.py**
+
+
+在L版中，`rpc.py`中有关qos的内容比较少，主要将qos policy和其他的network、port和mac等信息放到一个entry中进行RPC通信。
+
+```
+        network_qos_policy_id = port_context.network._network.get(
+            qos_consts.QOS_POLICY_ID)
+        entry = {'device': device,
+                 'network_id': port['network_id'],
+                 'port_id': port['id'],
+                 'mac_address': port['mac_address'],
+                 'admin_state_up': port['admin_state_up'],
+                 'network_type': segment[api.NETWORK_TYPE],
+                 'segmentation_id': segment[api.SEGMENTATION_ID],
+                 'physical_network': segment[api.PHYSICAL_NETWORK],
+                 'fixed_ips': port['fixed_ips'],
+                 'device_owner': port['device_owner'],
+                 'allowed_address_pairs': port['allowed_address_pairs'],
+                 'port_security_enabled': port.get(psec.PORTSECURITY, True),
+                 'qos_policy_id': port.get(qos_consts.QOS_POLICY_ID),
+                 'network_qos_policy_id': network_qos_policy_id,
+                 'profile': port[portbindings.PROFILE]}
+
+```
+
