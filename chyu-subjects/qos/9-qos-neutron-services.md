@@ -173,6 +173,97 @@ QOS_POLICY_ID = 'qos_policy_id'
 
 主要定义了类`QosPlugin`，该类主要继承父类`neutron.extensions.QoSPluginBase`，实现了neutron QOS service端的plugin，为network和port提供qos参数
 
+该类实现了neutron QOS 服务的plugin，提供network和port上的qos流量控制的plugin。
+
+首先进行了初始化，实例化类`QosServiceNotificationDriverManager()`，再进行后续的操作。
+
+```
+        self.notification_driver_manager = (
+            driver_mgr.QosServiceNotificationDriverManager())
+
+```
+
+方法`create_policy()`、`update_policy()`、`delete_policy()`、`get_policy()`,根据传入的参数`policy`或者`policy_id`进行相应的操作。
+
+```
+        policy = policy_object.QosPolicy(context, **policy['policy'])
+        policy.create()
+        self.notification_driver_manager.create_policy(context, policy)
+
+```
+
+
+这里主要是实例化`neutron.objects.qos.policy.QosPolicy()`类，并调用`create()`、`update()`、`delete()`、`get_by_id()`方法，即是增删改查。具体来说就是操作底层的数据库，进行增删改查。
+
+`neutron.objects`主要是和数据库层打交道的。
+
+在neutron.objects.qos.policy.QosPolicy()`类中，`create()`方法实例化了session层的映射，将对象和数据库中的表格映射起来。
+
+```
+    def create(self):
+        with db_api.autonested_transaction(self._context.session):
+            super(QosPolicy, self).create()
+            self.reload_rules()
+
+```
+
+```
+    def delete(self):
+        models = (
+            ('network', self.network_binding_model),
+            ('port', self.port_binding_model)
+        )
+        with db_api.autonested_transaction(self._context.session):
+            for object_type, model in models:
+                binding_db_obj = db_api.get_object(self._context, model,
+                                                   policy_id=self.id)
+                if binding_db_obj:
+                    raise exceptions.QosPolicyInUse(
+                        policy_id=self.id,
+                        object_type=object_type,
+                        object_id=binding_db_obj['%s_id' % object_type])
+
+            super(QosPolicy, self).delete()
+
+```
+
+```
+    def get_by_id(cls, context, id):
+        # We want to get the policy regardless of its tenant id. We'll make
+        # sure the tenant has permission to access the policy later on.
+        admin_context = context.elevated()
+        with db_api.autonested_transaction(admin_context.session):
+            policy_obj = super(QosPolicy, cls).get_by_id(admin_context, id)
+            if (not policy_obj or
+                not cls._is_policy_accessible(context, policy_obj)):
+                return
+
+            policy_obj.reload_rules()
+            return policy_obj
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
