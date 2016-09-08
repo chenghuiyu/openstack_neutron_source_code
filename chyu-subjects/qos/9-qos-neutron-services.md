@@ -183,6 +183,9 @@ QOS_POLICY_ID = 'qos_policy_id'
 
 ```
 
+### **policy的方法实现**
+
+
 方法`create_policy()`、`update_policy()`、`delete_policy()`、`get_policy()`,根据传入的参数`policy`或者`policy_id`进行相应的操作。
 
 ```
@@ -229,8 +232,6 @@ QOS_POLICY_ID = 'qos_policy_id'
 
 ```
     def get_by_id(cls, context, id):
-        # We want to get the policy regardless of its tenant id. We'll make
-        # sure the tenant has permission to access the policy later on.
         admin_context = context.elevated()
         with db_api.autonested_transaction(admin_context.session):
             policy_obj = super(QosPolicy, cls).get_by_id(admin_context, id)
@@ -244,31 +245,69 @@ QOS_POLICY_ID = 'qos_policy_id'
 ```
 
 
+### **rule的方法实现**
+
+分析完policy的配置，下面来看rule的具体操作，实现方法包括：`create_policy_bandwidth_limit_rule()`、`update_policy_bandwidth_limit_rule()`、`delete_policy_bandwidth_limit_rule()`、`get_policy_bandwidth_limit_rule()`、`get_policy_bandwidth_limit_rules()`
+
+
+#### `create_policy_bandwidth_limit_rule()`方法
+
+先实例化session的映射对象，将数据库的表和object进行映射，然后根据policy_id以及传入的参数`bandwidth_limit_rule`，先从`neutron.object`中实例化session,然后在数据库中进行表的添加。
+
+数据库添加完成后，在对policy进行update一下，保证rule的实时性。
 
 
 
+```
+            policy = self._get_policy_obj(context, policy_id)
+            rule = rule_object.QosBandwidthLimitRule(
+                context, qos_policy_id=policy_id,
+                **bandwidth_limit_rule['bandwidth_limit_rule'])
+            rule.create()
+            policy.reload_rules()
+        self.notification_driver_manager.update_policy(context, policy)
+
+
+```
+
+
+`neutron.objects.qos.QosRule`的子类`QosBandwidthLimitRule`中实现的步骤，可见直接调用`neutorn.db.qos.modles`操作数据库
+
+```
+    db_model = qos_db_model.QosBandwidthLimitRule
+```
+
+
+`neutorn.db.qos.modles`中的类`QosBandwidthLimitRule`实现过程，
+
+
+```
+    qos_policy_id = sa.Column(sa.String(36),
+                              sa.ForeignKey('qos_policies.id',
+                                            ondelete='CASCADE'),
+                              nullable=False,
+                              unique=True)
+    max_kbps = sa.Column(sa.Integer)
+    max_burst_kbps = sa.Column(sa.Integer)
+
+```
+
+这就是在数据库中对表数据的实际操作。操作结束再对policy更新一下rule
+
+
+`update_policy_bandwidth_limit_rule()`和`delete_policy_bandwidth_limit_rule()`实现过程类似，也是对后台数据库进行操作然后reload_rules一下。
 
 
 
+#### `get_policy_bandwidth_limit_rule()`
 
+调用方式也比较类似，主要通过`neutorn.objects`来对session进行映射实例化，然后从后台的数据库中进行查询
 
+```
+            self._get_policy_obj(context, policy_id)
+            rule = rule_object.QosBandwidthLimitRule.get_by_id(
+                context, rule_id)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
 
 
